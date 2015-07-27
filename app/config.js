@@ -5,8 +5,8 @@ var db = Bookshelf.initialize({
   client: 'sqlite3',
   connection: {
     host: '127.0.0.1',
-    user: 'your_database_user',
-    password: 'password',
+    user: 'your_database_user', //TODO: change this
+    password: 'password', //TODO: change this
     database: 'shortlydb',
     charset: 'utf8',
     filename: path.join(__dirname, '../db/shortly.sqlite')
@@ -45,5 +45,17 @@ db.knex.schema.hasTable('clicks').then(function(exists) {
 // Add additional schema definitions below
 /************************************************************/
 
+//schema that stores users and passwords with encryption
+db.knex.schema.hasTable('users').then(function(exists){ 
+  if(!exists){ 
+    db.knex.schema.createTable('users', function(user){ 
+      user.increments('id').primary();
+      user.string('username');
+      user.string('password')
+    }).then(function(table){ 
+      console.log("Created Table", table);
+    });
+  }
+});
 
 module.exports = db;

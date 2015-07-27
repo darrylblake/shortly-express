@@ -78,6 +78,9 @@ function(req, res) {
 // Write your authentication routes here
 /************************************************************/
 
+//TODO: login and signup functionality 
+//TODO: figure out sessions (use checkUser)
+//TODO: figure out logout functionality
 
 
 /************************************************************/
