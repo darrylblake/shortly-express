@@ -3,6 +3,7 @@ var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
 
+var session = require('client-sessions');
 
 var db = require('./app/config');
 var Users = require('./app/collections/users');
@@ -23,18 +24,34 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
 
-app.get('/', 
-function(req, res) {
+app.use(session({
+  cookieName: 'session',
+  secret: 'random_string_goes_here',
+  duration: 30 * 60 * 1000,
+  activeDuration: 5 * 60 * 1000,
+}));
+
+
+
+// app.get('/*') {
+//   // check if path name in restricted
+//     // check if user logged
+//       // carry on to page
+//     // else 
+//       // redirect login
+//   // else
+//     // server page as is
+// }
+
+app.get('/', function(req, res) {
   res.render('index');
 });
 
-app.get('/create', 
-function(req, res) {
+app.get('/create', function(req, res) {
   res.render('index');
 });
 
-app.get('/links', 
-function(req, res) {
+app.get('/links', function(req, res) {
   Links.reset().fetch().then(function(links) {
     res.send(200, links.models);
   });
@@ -79,6 +96,37 @@ function(req, res) {
 /************************************************************/
 
 //TODO: login and signup functionality 
+
+app.get('/login', function(req, res) {
+  res.render('login');
+});
+
+app.post('/login', function(req, res) {
+  util.checkUser(req.body.username, req.body.password, function(exists){ 
+    if(exists){ 
+      req.session.regenerate(function(){
+        req.session.user = req.body.username;
+        res.redirect('/index');
+      });
+    } else {
+      res.redirect('/login');
+    }
+  });
+});
+
+app.get('/signup', function(req, res) {
+  res.render('signup');
+});
+
+app.post('/signup', function(req, res) {
+  new User({ 
+    username: req.body.username, 
+    password: req.body.password
+  }).save().then(function(){
+    return res.redirect('/login');
+  });
+});
+
 //TODO: figure out sessions (use checkUser)
 //TODO: figure out logout functionality
 

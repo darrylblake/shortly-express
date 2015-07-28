@@ -21,7 +21,7 @@ describe('', function() {
 
   beforeEach(function() {
     // log out currently signed in user
-    request('http://127.0.0.1:4568/logout', function(error, res, body) {});
+    request('http://127.0.0.1:4568/logout', function(error, res, body) {}); //todo
 
     // delete link for roflzoo from db so it can be created later for the test
     db.knex('urls')
@@ -40,10 +40,10 @@ describe('', function() {
       .del()
       .catch(function(error) {
         // uncomment when writing authentication tests
-        // throw {
-        //   type: 'DatabaseError',
-        //   message: 'Failed to create test setup data'
-        // };
+        throw {
+          type: 'DatabaseError',
+          message: 'Failed to create test setup data'
+        };
       });
 
     // delete user Phillip from db so it can be created later for the test
@@ -52,10 +52,10 @@ describe('', function() {
       .del()
       .catch(function(error) {
         // uncomment when writing authentication tests
-        // throw {
-        //   type: 'DatabaseError',
-        //   message: 'Failed to create test setup data'
-        // };
+        throw {
+          type: 'DatabaseError',
+          message: 'Failed to create test setup data'
+        };
       });
   });
 
@@ -63,7 +63,7 @@ describe('', function() {
 
     var requestWithSession = request.defaults({jar: true});
 
-var xbeforeEach = function(){};
+    var beforeEach = function(){
       // create a user that we can then log-in with
       new User({
           'username': 'Phillip',
@@ -83,7 +83,7 @@ var xbeforeEach = function(){};
           done();
         });
       });
-    });
+    }
 
     it('Only shortens valid urls, returning a 404 - Not found for invalid urls', function(done) {
       var options = {
