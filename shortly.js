@@ -3,7 +3,7 @@ var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
 
-var session = require('client-sessions');
+var session = require('express-session');
 
 var db = require('./app/config');
 var Users = require('./app/collections/users');
@@ -25,10 +25,7 @@ app.use(express.static(__dirname + '/public'));
 
 
 app.use(session({
-  cookieName: 'session',
   secret: 'random_string_goes_here',
-  duration: 30 * 60 * 1000,
-  activeDuration: 5 * 60 * 1000,
 }));
 
 
@@ -43,22 +40,21 @@ app.use(session({
 //     // server page as is
 // }
 
-app.get('/', function(req, res) {
+app.get('/', util.restrict, function(req, res) {
   res.render('index');
 });
 
-app.get('/create', function(req, res) {
+app.get('/create', util.restrict, function(req, res) {
   res.render('index');
 });
 
-app.get('/links', function(req, res) {
+app.get('/links', util.restrict, function(req, res) {
   Links.reset().fetch().then(function(links) {
     res.send(200, links.models);
   });
 });
 
-app.post('/links', 
-function(req, res) {
+app.post('/links', util.restrict, function(req, res) {
   var uri = req.body.url;
 
   if (!util.isValidUrl(uri)) {
@@ -106,7 +102,7 @@ app.post('/login', function(req, res) {
     if(exists){ 
       req.session.regenerate(function(){
         req.session.user = req.body.username;
-        res.redirect('/index');
+        res.redirect('/');
       });
     } else {
       res.redirect('/login');
@@ -118,12 +114,22 @@ app.get('/signup', function(req, res) {
   res.render('signup');
 });
 
+app.get('/logout', function(req, res) {
+  req.session.destroy();
+  res.redirect('/login');
+});
+
+
 app.post('/signup', function(req, res) {
   new User({ 
     username: req.body.username, 
     password: req.body.password
   }).save().then(function(){
-    return res.redirect('/login');
+    req.session.regenerate(function(){
+        req.session.user = req.body.username;
+        res.redirect('/');
+      });
+    // return res.redirect('/login');
   });
 });
 

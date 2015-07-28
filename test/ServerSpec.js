@@ -1,5 +1,7 @@
 var expect = require('chai').expect;
 var request = require('request');
+var session = require('express-session');
+
 
 var db = require('../app/config');
 var Users = require('../app/collections/users');
@@ -17,11 +19,13 @@ var beforeEach = function(){};
 /************************************************************/
 
 
-describe('', function() {
+describe('Logs out existing user and deletes information from database', function() {
 
   beforeEach(function() {
     // log out currently signed in user
-    request('http://127.0.0.1:4568/logout', function(error, res, body) {}); //todo
+    request('http://127.0.0.1:4568/logout', function(error, res, body) {
+      expect(res.req.path).to.equal('/login');
+    }); //todo
 
     // delete link for roflzoo from db so it can be created later for the test
     db.knex('urls')
@@ -59,11 +63,11 @@ describe('', function() {
       });
   });
 
-  describe('Link creation:', function(){
+  xdescribe('Link creation:', function(){
 
     var requestWithSession = request.defaults({jar: true});
 
-    var beforeEach = function(){
+    var beforeEach = function(done){
       // create a user that we can then log-in with
       new User({
           'username': 'Phillip',
@@ -98,6 +102,7 @@ describe('', function() {
         // res comes from the request module, and may not follow express conventions
         expect(res.statusCode).to.equal(404);
         done();
+        
       });
     });
 
@@ -213,7 +218,7 @@ describe('', function() {
 
   }); // 'Link creation'
 
-  xdescribe('Privileged Access:', function(){
+  describe('Privileged Access:', function(){
 
     it('Redirects to login page if a user tries to access the main page and is not signed in', function(done) {
       request('http://127.0.0.1:4568/', function(error, res, body) {
@@ -238,7 +243,7 @@ describe('', function() {
 
   }); // 'Priviledged Access'
 
-  xdescribe('Account Creation:', function(){
+  describe('Account Creation:', function(){
 
     it('Signup creates a user record', function(done) {
       var options = {
@@ -286,7 +291,7 @@ describe('', function() {
 
   }); // 'Account Creation'
 
-  xdescribe('Account Login:', function(){
+  describe('Account Login:', function(){
 
     var requestWithSession = request.defaults({jar: true});
 
