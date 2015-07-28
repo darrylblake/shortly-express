@@ -5,6 +5,10 @@ var bodyParser = require('body-parser');
 
 var session = require('express-session');
 
+var passport = require('passport');
+var GitHubStrategy = require('passport-github2');
+var OAuthStrategy = require('passport-oauth').OAuthStrategy;
+
 var db = require('./app/config');
 var Users = require('./app/collections/users');
 var User = require('./app/models/user');
@@ -28,7 +32,60 @@ app.use(session({
   secret: 'random_string_goes_here',
 }));
 
+// passport.use('github', new OAuthStrategy({
+//     requestTokenURL: 'https://github.com/login/oauth/request_token',
+//     accessTokenURL: 'https://github.com/login/oauth/access_token',
+//     userAuthorizationURL: 'https://github.com/login/oauth/authorize',
+//     consumerKey: '9694fd142c05e52543ec',
+//     consumerSecret: 'd016148b1dee41d2501e76002b56fcb7f4b28f98',
+//     callbackURL: 'http://127.0.0.1:4568/auth/callback'
+//   },
+//   function(token, tokenSecret, profile, done) {
+//     // User.findOrCreate(..., function(err, user) {
+//     //   done(err, user);
+//     // });
+//   }
+// ));
 
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.use(new GitHubStrategy({
+    clientID: '9694fd142c05e52543ec',
+    clientSecret: 'd016148b1dee41d2501e76002b56fcb7f4b28f98',
+    callbackURL: "http://127.0.0.1:4568/auth/github/callback"
+  },
+  function(accessToken, refreshToken, profile, done) {
+    // asynchronous verification, for effect...
+    process.nextTick(function () {
+      
+      // To keep the example simple, the user's GitHub profile is returned to
+      // represent the logged-in user.  In a typical application, you would want
+      // to associate the GitHub account with a user record in your database,
+      // and return that user instead.
+      return done(null, profile);
+    });
+  }
+))
+
+
+passport.serializeUser(function(user, done) {
+  done(null, user);
+});
+
+passport.deserializeUser(function(obj, done) {
+  done(null, obj);
+});
+
+app.get('/auth/github',
+  passport.authenticate('github', { scope: [ 'user:email' ] }));
+
+app.get('/auth/github/callback', 
+  passport.authenticate('github', { failureRedirect: '/login' }),
+  function(req, res) {
+    // Successful authentication, redirect home.
+    res.redirect('/');
+  });
 
 // app.get('/*') {
 //   // check if path name in restricted
@@ -115,8 +172,8 @@ app.get('/signup', function(req, res) {
 });
 
 app.get('/logout', function(req, res) {
-  req.session.destroy();
-  res.redirect('/login');
+  req.logout();
+  res.redirect('/');
 });
 
 
